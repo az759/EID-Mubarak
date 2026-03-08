@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Eid Mubarak - Digital Greeting</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- React & Framer Motion Libraries (CDN) -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- Menggunakan versi yang lebih stabil untuk UMD -->
+    <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Playfair+Display:ital,wght@1,600&display=swap");
+
+      body {
+        font-family: "Inter", sans-serif;
+        margin: 0;
+        padding: 0;
+      }
+      .font-serif {
+        font-family: "Playfair Display", serif;
+      }
+
+      /* Mencegah scroll horizontal saat animasi */
+      .overflow-x-hidden {
+        overflow-x: hidden;
+      }
+    </style>
+  </head>
+  <body class="bg-[#f8fafc]">
+    <div id="root"></div>
+
+    <script type="text/babel">
+      const { useState, useEffect } = React;
+      // Memperbaiki referensi global FramerMotion yang mungkin berbeda di lingkungan browser
+      const motion = window.Motion?.motion || window.framerMotion?.motion;
+      const useScroll =
+        window.Motion?.useScroll || window.framerMotion?.useScroll;
+      const useSpring =
+        window.Motion?.useSpring || window.framerMotion?.useSpring;
+      const AnimatePresence =
+        window.Motion?.AnimatePresence || window.framerMotion?.AnimatePresence;
+
+      // Fallback jika global variable masih belum terdeteksi (beberapa CDN menggunakan nama berbeda)
+      const FM = window.framerMotion || window.Motion;
+
+      // --- KOMPONEN DEKORATIF ---
+      const CrescentMoon = () => (
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          className="w-16 h-16 text-yellow-400"
+        >
+          <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
+        </svg>
+      );
+
+      const Lantern = ({ className }) => (
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          className={className}
+        >
+          <path d="M12 2v2M8 4h8l1 4H7l1-4zM7 8v8h10V8H7zm2 14v-2h6v2M9 16l-1 4h8l-1-4" />
+        </svg>
+      );
+
+      const MosqueIcon = () => (
+        <svg
+          viewBox="0 0 100 100"
+          className="w-32 h-32 fill-emerald-600 opacity-90"
+        >
+          <path d="M50 5 L65 25 L35 25 Z M20 40 L80 40 L85 95 L15 95 Z M50 30 Q50 10 70 30 Q50 50 50 30" />
+          <rect x="40" y="65" width="20" height="30" rx="10" fill="#064e3b" />
+        </svg>
+      );
+
+      // --- KONTANER ANIMASI SCROLL ---
+      const ScrollReveal = ({
+        children,
+        direction = "up",
+        delay = 0,
+        className = "",
+      }) => {
+        const variants = {
+          hidden: {
+            opacity: 0,
+            y: direction === "up" ? 60 : 0,
+            x: direction === "left" ? -60 : direction === "right" ? 60 : 0,
+            filter: "blur(10px)",
+            scale: 0.95,
+          },
+          visible: {
+            opacity: 1,
+            y: 0,
+            x: 0,
+            filter: "blur(0px)",
+            scale: 1,
+            transition: {
+              duration: 1,
+              delay: delay,
+              ease: [0.21, 0.47, 0.32, 0.98],
+            },
+          },
+        };
+
+        if (!FM) return <div className={className}>{children}</div>;
+
+        return (
+          <FM.motion.div
+            className={className}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: false, amount: 0.2 }}
+            variants={variants}
+          >
+            {children}
+          </FM.motion.div>
+        );
+      };
+
+      // --- APLIKASI UTAMA ---
+      const App = () => {
+        if (!FM)
+          return <div className="p-10 text-center">Memuat animasi...</div>;
+
+        const { useScroll, useSpring } = FM;
+        const { scrollYProgress } = useScroll();
+        const scaleX = useSpring(scrollYProgress, {
+          stiffness: 100,
+          damping: 30,
+          restDelta: 0.001,
+        });
+
+        return (
+          <div className="min-h-screen bg-[#f8fafc] text-slate-900 font-sans selection:bg-emerald-200 overflow-x-hidden">
+            {/* Progress Bar */}
+            <FM.motion.div
+              className="fixed top-0 left-0 right-0 h-1.5 bg-emerald-600 origin-left z-50"
+              style={{ scaleX }}
+            />
+
+            {/* SECTION 1: HERO (Pembuka) */}
+            <section className="h-screen flex flex-col items-center justify-center relative bg-gradient-to-b from-emerald-950 to-emerald-800 text-white px-6 overflow-hidden">
+              {/* Latar Belakang Animasi Lentera */}
+              <div className="absolute inset-0 opacity-20 pointer-events-none">
+                {[...Array(6)].map((_, i) => (
+                  <FM.motion.div
+                    key={i}
+                    animate={{
+                      y: [0, -40, 0],
+                      opacity: [0.2, 0.5, 0.2],
+                    }}
+                    transition={{
+                      duration: 4 + i,
+                      repeat: Infinity,
+                      delay: i,
+                    }}
+                    className="absolute"
+                    style={{
+                      top: `${i * 15 + 5}%`,
+                      left: `${i * 18 + 10}%`,
+                    }}
+                  >
+                    <Lantern className="w-12 h-12 text-yellow-200" />
+                  </FM.motion.div>
+                ))}
+              </div>
+
+              <FM.motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 1.2 }}
+                className="z-10 text-center"
+              >
+                <div className="flex justify-center mb-8">
+                  <CrescentMoon />
+                </div>
+                <h1 className="text-5xl md:text-8xl font-bold mb-4 tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-yellow-200 to-emerald-100">
+                  Eid Mubarak
+                </h1>
+                <p className="text-lg md:text-2xl font-light tracking-[0.2em] uppercase text-emerald-200">
+                  1 Syawal 1445 H
+                </p>
+              </FM.motion.div>
+
+              {/* Scroll Indicator */}
+              <FM.motion.div
+                animate={{ y: [0, 10, 0] }}
+                transition={{ repeat: Infinity, duration: 2 }}
+                className="absolute bottom-12 flex flex-col items-center opacity-50"
+              >
+                <p className="text-[10px] uppercase tracking-widest mb-2">
+                  Gulir untuk Pesan
+                </p>
+                <div className="w-[1px] h-12 bg-white/40" />
+              </FM.motion.div>
+            </section>
+
+            {/* SECTION 2: CONTENT AREA */}
+            <main className="max-w-4xl mx-auto px-6 py-32 space-y-48">
+              {/* Pesan 1: Doa */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                <ScrollReveal direction="left">
+                  <div className="bg-emerald-50 aspect-square rounded-[2rem] flex items-center justify-center shadow-inner border border-emerald-100">
+                    <MosqueIcon />
+                  </div>
+                </ScrollReveal>
+
+                <ScrollReveal direction="right" delay={0.2}>
+                  <div>
+                    <h2 className="text-3xl font-bold text-emerald-900 mb-6 leading-tight">
+                      Taqabbalallahu Minna Wa Minkum
+                    </h2>
+                    <p className="text-lg text-slate-600 leading-relaxed font-light">
+                      "Semoga Allah menerima amal ibadah kami dan amal ibadah
+                      kalian." Setelah sebulan kita menempa diri, kini tiba
+                      saatnya merayakan kesucian hati di hari yang fitri.
+                    </p>
+                  </div>
+                </ScrollReveal>
+              </div>
+
+              {/* Pesan 2: Minal Aidin (Fokus Tengah) */}
+              <ScrollReveal direction="up">
+                <div className="bg-white p-10 md:p-20 rounded-[3rem] shadow-2xl shadow-emerald-900/5 text-center border border-emerald-50 relative overflow-hidden group">
+                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-yellow-400 via-emerald-500 to-yellow-400" />
+
+                  <h2 className="text-4xl md:text-6xl font-serif text-emerald-900 mb-8 italic">
+                    Minal 'Aidin Wal-Fa'idzin
+                  </h2>
+
+                  <p className="text-xl text-slate-500 max-w-2xl mx-auto mb-10 leading-relaxed font-light">
+                    Mohon maaf lahir dan batin. Semoga kebahagiaan menyertai
+                    setiap langkah kita di lembaran yang baru ini.
+                  </p>
+
+                  <div className="flex justify-center items-center gap-4">
+                    <div className="h-[1px] w-16 bg-emerald-200" />
+                    <div className="w-3 h-3 rotate-45 border border-yellow-500" />
+                    <div className="h-[1px] w-16 bg-emerald-200" />
+                  </div>
+                </div>
+              </ScrollReveal>
+
+              {/* Pesan 3: Silaturahmi */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                <ScrollReveal direction="left" className="order-2 md:order-1">
+                  <div className="space-y-6">
+                    <h3 className="text-2xl font-semibold text-emerald-800">
+                      Setulus Hati, Aku Ingin Meminta Maaf
+                    </h3>
+                    <p className="text-slate-600 leading-relaxed font-light">
+                      Di hari yang fitri ini, aku ingin menyampaikan sesuatu
+                      yang mungkin selama ini hanya tersimpan di hati.
+                    </p>
+                    <p className="font-medium text-emerald-900">
+                      "Aku ingin meminta maaf jika selama ini sering mengganggu
+                      waktumu dengan pertanyaan-pertanyaan yang mungkin tidak
+                      jelas atau tidak penting.
+                    </p>
+                    <p>
+                      " Maaf juga kalau ada kata-kata atau candaanku yang tanpa
+                      sengaja menyakiti hati atau tidak berkenan di perasaanmu.
+                      Terkadang aku hanya ingin menyapa, meski caranya mungkin
+                      kurang tepat.
+                    </p>
+                    <p>
+                      {" "}
+                      Semoga di hari lebaran ini, pintu maafmu terbuka lebar
+                      untuk segala kekhilafanku.
+                    </p>
+                  </div>
+                </ScrollReveal>
+
+                <ScrollReveal
+                  direction="right"
+                  delay={0.3}
+                  className="order-1 md:order-2"
+                >
+                  <div className="relative">
+                    <div className="absolute -inset-4 bg-yellow-100/50 rounded-full blur-3xl" />
+                    <img
+                      src="https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?auto=format&fit=crop&q=80&w=800"
+                      alt="Idul Fitri"
+                      className="relative rounded-3xl shadow-xl z-10 w-full"
+                    />
+                  </div>
+                </ScrollReveal>
+              </div>
+
+              {/* Final Message */}
+              <ScrollReveal direction="up">
+                <section className="text-center py-20 border-t border-slate-200">
+                  <h4 className="text-emerald-900 font-bold text-2xl mb-4">
+                    Salam Hangat dari Aku
+                  </h4>
+                  <p className="text-slate-400 font-light">
+                    Semoga keberkahan selalu meliputi kamu, Azka Hassyati Bayan.
+                  </p>
+                </section>
+              </ScrollReveal>
+            </main>
+
+            {/* Footer */}
+            <footer className="bg-emerald-950 text-emerald-500/50 py-12 text-center text-[10px] tracking-[0.3em] uppercase">
+              Aji Nur Rizal • 2026 • Eid Series
+            </footer>
+          </div>
+        );
+      };
+
+      const root = ReactDOM.createRoot(document.getElementById("root"));
+      root.render(<App />);
+    </script>
+  </body>
+</html>
